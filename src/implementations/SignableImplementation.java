@@ -7,15 +7,16 @@ import exceptions.ServerErrorException;
 import interfaces.Signable;
 import packets.User;
 
-public class SignableImplementation implements Signable{
+public class SignableImplementation implements Signable {
 
     @Override
-    public User signIn(User user) throws BadCredentialsException, NoSuchUserException, ServerCapacityException, ServerErrorException {
-    return null;
+    public User signIn(User user)
+            throws BadCredentialsException, NoSuchUserException, ServerCapacityException, ServerErrorException {
+        return null;
     }
 
     @Override
     public void signUp(User user) throws ServerCapacityException, ServerErrorException {
     }
-    
+
 }
