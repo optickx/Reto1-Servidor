@@ -22,7 +22,7 @@ public abstract class Pool {
     /**
      * @return the connection with the selected database
      */
-    public static Connection openConnection() throws ServerErrorException {
+    private static Connection openConnection() throws ServerErrorException {
         con = null;
         try {
             con = DriverManager
@@ -32,7 +32,7 @@ public abstract class Pool {
 
             stack.add(con);
         } catch (SQLException ex) {
-            throw new ServerErrorException("Error creating a new connection");
+            throw new ServerErrorException();
         }
         return con;
     }
@@ -42,11 +42,11 @@ public abstract class Pool {
      * @return if the stack is empty it gives a new connection, else the stack
      *         returns a connection
      */
-    public static Connection getConnection() throws ServerErrorException{
+    public static synchronized Connection getConnection() throws ServerErrorException {
         return !stack.empty() ? (Connection) stack.pop() : openConnection();
     }
 
-    public static void returnConnection(Connection con) {
+    public static synchronized void returnConnection(Connection con) {
         stack.push(con);
     }
 
@@ -60,7 +60,7 @@ public abstract class Pool {
             try {
                 con.close();
             } catch (SQLException ex) {
-                throw new ServerErrorException("Error closing connections to the database");
+                throw new ServerErrorException();
             }
         }
         stack.clear();
