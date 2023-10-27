@@ -12,10 +12,11 @@ public abstract class SqlDefinitions {
          * after verifying a users identity with both LOGIN_CHECK and PASSWORD_CHECK in
          * that order
          */
-        public static final String USER_SELECT = "SELECT ru.login, ru.password, rp.name, rp.street, rcs.name as state, rp.zip, rp.city, rc.name as country, rp.phone "
-                        + "JOIN public.res_users ru on ru.partner_id = rp.id "
-                        + "JOIN public.res_country rc on rp.country_id = rc.id "
-                        + "JOIN public.res_country_state rcs on rp.state_id = rcs.id " + "WHERE ru.id =?";
+        public static final String USER_SELECT = "SELECT ru.login, ru.password, rp.name, rp.street, rp.zip, rp.city, rp.phone "
+                        + "FROM public.res_partner rp "
+                        + "JOIN public.res_users ru on ru.partner_id = rp.id " 
+                        + "WHERE ru.id = ?";
+;
 
         /**
          * Selects user id from an existing user.
@@ -35,5 +36,5 @@ public abstract class SqlDefinitions {
          * Calls a procedure that handles the insertion of a new user
          * The fields to fill are in the same order as the User class
          */
-        public static final String INSERT_NEW_USER = "CALL insert_new_user(?,?,?,?,?,?,?,?,?)";
+        public static final String INSERT_NEW_USER = "CALL insert_new_user(?,?,?,?,?,?,?)";
 }

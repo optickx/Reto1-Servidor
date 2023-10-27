@@ -44,11 +44,13 @@ public class SignableImplementation implements Signable {
     @Override
     public void signUp(User user) throws UserAlreadyExistsException, ServerCapacityException, ServerErrorException {
         con = Pool.getConnection(); // gets an open connection to the database
-        if (!isUser(user)) // check if user exists
+        if (!isUser(user)) { // check if user exists
             insertNewUser(user); // create a new user
-
-        doClosing();
-        throw new UserAlreadyExistsException(); // if the login information provided matches an existing user
+            doClosing();
+        } else {
+            doClosing();
+            throw new UserAlreadyExistsException();
+        }
     }
 
     /**
@@ -150,7 +152,7 @@ public class SignableImplementation implements Signable {
      * 
      * @param user Not existing user
      */
-    private void insertNewUser(User user) throws ServerErrorException {
+    private void insertNewUser(User user) throws ServerErrorException, UserAlreadyExistsException {
         try {
             cstmt = con.prepareCall(INSERT_NEW_USER); // prepare sql statement
             // set all the information
