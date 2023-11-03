@@ -6,14 +6,11 @@ import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.jcraft.jsch.JSch;
-import com.jcraft.jsch.JSchException;
-import com.jcraft.jsch.Session;
-
 import controller.Worker;
 
 /**
- *
+ * Main class for the Server side, that handles all the requests from clients
+ * 
  * @author Alexander Epelde
  */
 public abstract class Server {
@@ -21,7 +18,7 @@ public abstract class Server {
     /**
      * Declares a global LOG file that will be used for the whole server side
      */
-    public static final Logger LOGGER = Logger.getLogger("server.LOG");
+    public static final Logger LOGGER = Logger.getLogger("server");
 
     /**
      * Bundle for constants that are succeptible of change
@@ -52,7 +49,8 @@ public abstract class Server {
             .getString("MAX_USERS"));
 
     public static void main(String[] args) {
-        stablishConnection();
+        setExitKeyListener(); // we stablish a key that if we enter the server will stop
+        // stablishConnection();
         // infinite loop that is listening for new clients' requests
         while (true) {
             client = null;
@@ -95,27 +93,36 @@ public abstract class Server {
     }
 
     /**
-     * Method that is in charge of connecting to the database server
+     * Method in charge of stablishing a key that will make the server stop
      */
-    private static void stablishConnection() {
-        Session session;
-        try {
-            // set parameters to connect to the host that will port forward the database
-            // server
-            session = new JSch().getSession(
-                    ResourceBundle.getBundle(propertyBundle).getString("HOSTNAME"),
-                    ResourceBundle.getBundle(propertyBundle).getString("ODOO_HOST"));
-            session.setPassword(
-                    ResourceBundle.getBundle(propertyBundle).getString("ODOO_PASSWORD"));
-            session.setConfig("StrictHostKeyChecking", "no");
-            session.connect();
-            // we set a port forward on that host to the database server
-            session.setPortForwardingL(
-                    Integer.parseInt(ResourceBundle.getBundle(propertyBundle).getString("FORWARDED_PORT")),
-                    ResourceBundle.getBundle(propertyBundle).getString("DESTINATION_HOST"),
-                    Integer.parseInt(ResourceBundle.getBundle(propertyBundle).getString("DESTINATION_PORT")));
-        } catch (JSchException e) {
-            LOGGER.log(Level.SEVERE, e.getMessage());
-        }
+    private static void setExitKeyListener() {
+        ExitKeyListener ekl = new ExitKeyListener();
+        ekl.start();
     }
+
+    /**
+     * Method that is in charge of connecting to the database server
+     *
+     * private static void stablishConnection() {
+     * Session session;
+     * try {
+     * // set parameters to connect to the host that will port forward the database
+     * // server
+     * session = new JSch().getSession(
+     * ResourceBundle.getBundle(propertyBundle).getString("HOSTNAME"),
+     * ResourceBundle.getBundle(propertyBundle).getString("ODOO_HOST"));
+     * session.setPassword(
+     * ResourceBundle.getBundle(propertyBundle).getString("ODOO_PASSWORD"));
+     * session.setConfig("StrictHostKeyChecking", "no");
+     * session.connect();
+     * // we set a port forward on that host to the database server
+     * session.setPortForwardingL(
+     * Integer.parseInt(ResourceBundle.getBundle(propertyBundle).getString("FORWARDED_PORT")),
+     * ResourceBundle.getBundle(propertyBundle).getString("DESTINATION_HOST"),
+     * Integer.parseInt(ResourceBundle.getBundle(propertyBundle).getString("DESTINATION_PORT")));
+     * } catch (JSchException e) {
+     * LOGGER.log(Level.SEVERE, e.getMessage());
+     * }
+     * }
+     */
 }

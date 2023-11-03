@@ -22,11 +22,11 @@ public class SignableImplementation implements Signable {
      */
     private Connection con;
     /**
-     * Object user to execute queries
+     * Object used to execute queries
      */
     private PreparedStatement stmt;
     /**
-     * Objetct user to execute calls to functions or procedures
+     * Object used to execute calls to functions or procedures
      */
     private CallableStatement cstmt;
 
@@ -36,9 +36,7 @@ public class SignableImplementation implements Signable {
         con = Pool.getConnection(); // gets an open connection to the database
         if (isUser(user)) // check if user exists
             return getUser(checkPassword(user)); // return built user
-
-        doClosing();
-        throw new NoSuchUserException(); // if the login information is incorrect
+        throw new NoSuchUserException(); // login information is incorrect
     }
 
     @Override
@@ -49,7 +47,7 @@ public class SignableImplementation implements Signable {
             doClosing();
         } else {
             doClosing();
-            throw new UserAlreadyExistsException();
+            throw new UserAlreadyExistsException(); 
         }
     }
 
@@ -118,14 +116,15 @@ public class SignableImplementation implements Signable {
             ResultSet rs = stmt.executeQuery(); // get user info
             if (rs.next()) {
                 // set all user information
-                user.setEmail(rs.getString("login"));
-                user.setPassword(rs.getString("password"));
-                user.setFullName(rs.getString("name"));
-                user.setStreet(rs.getString("street"));
-                user.setPostalCode(rs.getInt("zip"));
-                user.setCity(rs.getString("city"));
-                user.setPhone(rs.getString("phone"));
+                user.setEmail(rs.getString(1));
+                user.setPassword(rs.getString(2));
+                user.setFullName(rs.getString(3));
+                user.setStreet(rs.getString(4));
+                user.setPostalCode(rs.getInt(5));
+                user.setCity(rs.getString(6));
+                user.setPhone(rs.getString(7));
             }
+            doClosing();
             return user;
         } catch (Exception e) { // if there are any unhandled exceptions
             throw new ServerErrorException();
@@ -141,7 +140,10 @@ public class SignableImplementation implements Signable {
     private void doClosing() throws ServerErrorException {
         try {
             Pool.returnConnection(con);
-            stmt.close();
+            if (stmt != null)
+                stmt.close();
+            if (cstmt != null)
+                cstmt.close();
         } catch (Exception e) {
             throw new ServerErrorException();
         }
