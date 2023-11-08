@@ -6,6 +6,10 @@ import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.jcraft.jsch.JSch;
+import com.jcraft.jsch.JSchException;
+import com.jcraft.jsch.Session;
+
 import controller.Worker;
 
 /**
@@ -18,7 +22,7 @@ public abstract class Server {
     /**
      * Declares a global LOG file that will be used for the whole server side
      */
-    public static final Logger LOGGER = Logger.getLogger("server");
+    public static final Logger LOGGER = Logger.getLogger("package server\":");
 
     /**
      * Bundle for constants that are succeptible of change
@@ -50,16 +54,17 @@ public abstract class Server {
 
     public static void main(String[] args) {
         setExitKeyListener(); // we stablish a key that if we enter the server will stop
-        // stablishConnection();
+        LOGGER.info("Server connected, Press 'p' to exit");
+        //stablishConnection();
         // infinite loop that is listening for new clients' requests
         while (true) {
             client = null;
             try {
                 // build server socket that listens at PORT
                 serverSocket = new ServerSocket(PORT);
-                System.out.println("Esperando conexiones del cliente...");
+                LOGGER.info("Expecting clients");
                 client = serverSocket.accept();
-                System.out.println("Cliente conectado");
+                LOGGER.info("Client connected");
                 if (CONCURRENT_USERS != MAX_USERS) // check if the server is at max capacity
                     new Worker(client);
                 else // send the user a message to saying this
@@ -103,26 +108,27 @@ public abstract class Server {
     /**
      * Method that is in charge of connecting to the database server
      *
-     * private static void stablishConnection() {
-     * Session session;
-     * try {
-     * // set parameters to connect to the host that will port forward the database
-     * // server
-     * session = new JSch().getSession(
-     * ResourceBundle.getBundle(propertyBundle).getString("HOSTNAME"),
-     * ResourceBundle.getBundle(propertyBundle).getString("ODOO_HOST"));
-     * session.setPassword(
-     * ResourceBundle.getBundle(propertyBundle).getString("ODOO_PASSWORD"));
-     * session.setConfig("StrictHostKeyChecking", "no");
-     * session.connect();
-     * // we set a port forward on that host to the database server
-     * session.setPortForwardingL(
-     * Integer.parseInt(ResourceBundle.getBundle(propertyBundle).getString("FORWARDED_PORT")),
-     * ResourceBundle.getBundle(propertyBundle).getString("DESTINATION_HOST"),
-     * Integer.parseInt(ResourceBundle.getBundle(propertyBundle).getString("DESTINATION_PORT")));
-     * } catch (JSchException e) {
-     * LOGGER.log(Level.SEVERE, e.getMessage());
-     * }
-     * }
-     */
+
+    private static void stablishConnection() {
+        Session session;
+        try {
+            // set parameters to connect to the host that will port forward the database
+            // server
+            session = new JSch().getSession(
+                    ResourceBundle.getBundle(propertyBundle).getString("HOSTNAME"),
+                    ResourceBundle.getBundle(propertyBundle).getString("ODOO_HOST"));
+            session.setPassword(
+                    ResourceBundle.getBundle(propertyBundle).getString("ODOO_PASSWORD"));
+            session.setConfig("StrictHostKeyChecking", "no");
+            session.connect();
+            // we set a port forward on that host to the database server
+            session.setPortForwardingL(
+                    Integer.parseInt(ResourceBundle.getBundle(propertyBundle).getString("FORWARDED_PORT")),
+                    ResourceBundle.getBundle(propertyBundle).getString("DESTINATION_HOST"),
+                    Integer.parseInt(ResourceBundle.getBundle(propertyBundle).getString("DESTINATION_PORT")));
+        } catch (JSchException e) {
+            LOGGER.log(Level.SEVERE, e.getMessage());
+        }
+    }
+    */
 }

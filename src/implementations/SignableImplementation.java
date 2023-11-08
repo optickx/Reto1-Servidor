@@ -4,6 +4,8 @@ import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.logging.Level;
 
 import exceptions.BadCredentialsException;
 import exceptions.NoSuchUserException;
@@ -13,6 +15,7 @@ import exceptions.UserAlreadyExistsException;
 import interfaces.Signable;
 import packets.User;
 import pool.Pool;
+import static server.Server.*;
 
 import static implementations.SqlDefinitions.*;
 
@@ -47,7 +50,7 @@ public class SignableImplementation implements Signable {
             doClosing();
         } else {
             doClosing();
-            throw new UserAlreadyExistsException(); 
+            throw new UserAlreadyExistsException();
         }
     }
 
@@ -70,6 +73,7 @@ public class SignableImplementation implements Signable {
 
             return false; // if it doesnt exist
         } catch (Exception e) { // if there are any unhandled errors
+            LOGGER.log(Level.SEVERE, e.getMessage());
             throw new ServerErrorException();
         }
     }
@@ -92,9 +96,9 @@ public class SignableImplementation implements Signable {
             ResultSet rs = stmt.executeQuery(); // gets user id
             if (rs.next())
                 return rs.getInt("id"); // returns user id if password is correct
-            else
-                throw new BadCredentialsException(); // if the password is incorrect
-        } catch (Exception e) { // if there are any unhandled exceptions
+            throw new BadCredentialsException(); // if the password is incorrect
+        } catch (SQLException e) { // if there are any unhandled exceptions
+            LOGGER.log(Level.SEVERE, e.getMessage());
             throw new ServerErrorException();
         }
     }
@@ -127,9 +131,9 @@ public class SignableImplementation implements Signable {
             doClosing();
             return user;
         } catch (Exception e) { // if there are any unhandled exceptions
+            LOGGER.log(Level.SEVERE, e.getMessage());
             throw new ServerErrorException();
         }
-
     }
 
     /**
@@ -145,6 +149,7 @@ public class SignableImplementation implements Signable {
             if (cstmt != null)
                 cstmt.close();
         } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, e.getMessage());// if there are any execution errors
             throw new ServerErrorException();
         }
     }
@@ -167,10 +172,8 @@ public class SignableImplementation implements Signable {
             cstmt.setString(7, user.getPhone());
             // execute the call
             cstmt.execute();
-            if (cstmt.getString(1) != null) // if there are any execution errors
-                throw new ServerErrorException();
-
         } catch (Exception e) { // if there are any unhandled exceptions
+            LOGGER.log(Level.SEVERE, e.getMessage());// if there are any execution errors
             throw new ServerErrorException();
         }
 

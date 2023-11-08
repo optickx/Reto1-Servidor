@@ -5,6 +5,9 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.ResourceBundle;
 import java.util.Stack;
+import java.util.logging.Level;
+
+import static server.Server.*;
 
 import exceptions.ServerErrorException;
 
@@ -34,7 +37,8 @@ public abstract class Pool {
             return DriverManager.getConnection(config.getString("URL"),
                     config.getString("USER"),
                     config.getString("PASSWORD"));
-        } catch (SQLException ex) {
+        } catch (SQLException e) {
+            LOGGER.log(Level.SEVERE, e.getMessage());// if there are any execution errors
             throw new ServerErrorException();
         }
     }
@@ -67,7 +71,8 @@ public abstract class Pool {
                 stack.pop().close();
 
             stack.clear();
-        } catch (SQLException ex) {
+        } catch (SQLException e) {
+            LOGGER.log(Level.SEVERE, e.getMessage());// if there are any execution errors
             throw new ServerErrorException();
         }
     }

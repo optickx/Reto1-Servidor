@@ -16,7 +16,7 @@ import packets.Request;
 import packets.RequestType;
 import packets.Response;
 import packets.ResponseType;
-import server.Server;
+import static server.Server.*;
 
 /**
  * Worker thread that handles the request of the user and returns the
@@ -69,7 +69,7 @@ public class Worker extends Thread {
     @Override
     public void run() {
         super.run();
-        Server.changeWorkerCount(1);
+        changeWorkerCount(1);
 
         work();
     }
@@ -106,7 +106,7 @@ public class Worker extends Thread {
         } catch (UserAlreadyExistsException e) {
             response = new Response(request.getUser(), ResponseType.USER_ALREADY_EXISTS_ERROR);
         } catch (Exception e) {
-            Server.LOGGER.log(Level.SEVERE, e.getMessage());
+            LOGGER.log(Level.SEVERE, e.getMessage());
         } finally {
             try {
                 if (!correctExecutionFlag) // get back to the user with the aproppriate response error
@@ -119,9 +119,9 @@ public class Worker extends Thread {
                 if (client != null)
                     client.close();
             } catch (Exception e) {
-                Server.LOGGER.log(Level.SEVERE, e.getMessage());
+                LOGGER.log(Level.SEVERE, e.getMessage());
             }
-            Server.changeWorkerCount(0); // signal to the Server that the thread execution is done
+            changeWorkerCount(0); // signal to the Server that the thread execution is done
         }
     }
 
@@ -142,7 +142,7 @@ public class Worker extends Thread {
             // write to the user signaling a server overload
             out.writeObject(new Response(request.getUser(), ResponseType.SERVER_CAPACITY_ERROR));
         } catch (Exception e) {
-            Server.LOGGER.log(Level.SEVERE, e.getMessage());
+            LOGGER.log(Level.SEVERE, e.getMessage());
         } finally {
             try { // close all the objects that need closing
                 if (in != null)
@@ -152,7 +152,7 @@ public class Worker extends Thread {
                 if (client != null)
                     client.close();
             } catch (Exception e) {
-                Server.LOGGER.log(Level.SEVERE, e.getMessage());
+                LOGGER.log(Level.SEVERE, e.getMessage());
             }
         }
     }

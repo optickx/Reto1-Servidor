@@ -1,5 +1,7 @@
 package server;
 
+import java.util.logging.Level;
+
 import pool.Pool;
 
 /**
@@ -14,13 +16,13 @@ public class ExitKeyListener extends Thread {
             while (true) {
                 int input = System.in.read();
                 if (input == 112) { // Check for the 'p' key (ASCII value 112)
-                    System.out.println("Exit code entered. Exiting...");
+                    Server.LOGGER.info("Exit code entered. Exiting...");
                     Pool.removeAll();
                     System.exit(0);
                 }
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            Server.LOGGER.log(Level.SEVERE, e.getMessage());
         }
     }
 }
