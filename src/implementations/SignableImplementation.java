@@ -7,6 +7,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.logging.Level;
 
+import org.postgresql.util.PSQLException;
+
 import exceptions.BadCredentialsException;
 import exceptions.NoSuchUserException;
 import exceptions.ServerCapacityException;
@@ -37,21 +39,19 @@ public class SignableImplementation implements Signable {
     public User signIn(User user)
             throws BadCredentialsException, NoSuchUserException, ServerCapacityException, ServerErrorException {
         con = Pool.getConnection(); // gets an open connection to the database
-        if (isUser(user)) // check if user exists
-            return getUser(checkPassword(user)); // return built user
-        throw new NoSuchUserException(); // login information is incorrect
+        if (!isUser(user)) // check if user exists
+            throw new NoSuchUserException(); // login information is incorrect
+        return getUser(checkPassword(user)); // return built user
     }
 
     @Override
     public void signUp(User user) throws UserAlreadyExistsException, ServerCapacityException, ServerErrorException {
         con = Pool.getConnection(); // gets an open connection to the database
-        if (!isUser(user)) { // check if user exists
-            insertNewUser(user); // create a new user
-            doClosing();
-        } else {
-            doClosing();
+        if (isUser(user))
             throw new UserAlreadyExistsException();
-        }
+        insertNewUser(user); // create a new user
+        doClosing();
+
     }
 
     /**
@@ -159,8 +159,10 @@ public class SignableImplementation implements Signable {
      * 
      * @param user Not existing user
      */
-    private void insertNewUser(User user) throws ServerErrorException, UserAlreadyExistsException {
+    private void insertNewUser(User user) throws ServerErrorException {
         try {
+            createProcedure();//insert a new procedure
+
             cstmt = con.prepareCall(INSERT_NEW_USER); // prepare sql statement
             // set all the information
             cstmt.setString(1, user.getEmail());
@@ -172,8 +174,32 @@ public class SignableImplementation implements Signable {
             cstmt.setString(7, user.getPhone());
             // execute the call
             cstmt.execute();
+        } catch (PSQLException e) {
+            // this catch will only be entered if there are any errors with the insertion,
+            // namely if the username already exists, which is already handled above so it
+            // shouldnt happen
+            LOGGER.log(Level.SEVERE, e.getMessage());
+            throw new ServerErrorException();
+
         } catch (Exception e) { // if there are any unhandled exceptions
             LOGGER.log(Level.SEVERE, e.getMessage());// if there are any execution errors
+            throw new ServerErrorException();
+        }
+
+    }
+
+    /**
+     * This method is in charge of loading into the database a procedure that
+     * handles the insertion of new users
+     * 
+     * @throws ServerErrorException
+     */
+    private void createProcedure() throws ServerErrorException {
+        try {
+            stmt = con.prepareStatement(INSERT_PROCEDURE);
+            stmt.execute();
+        } catch (SQLException e) {
+            LOGGER.log(Level.SEVERE, e.getMessage());
             throw new ServerErrorException();
         }
 
